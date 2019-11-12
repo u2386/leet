@@ -54,8 +54,6 @@ def test03():
 
 
 def main():
-    import pdb
-    pdb.set_trace()
     print(Solution().restoreIpAddresses('0000'))
 
 
