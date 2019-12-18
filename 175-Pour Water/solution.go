@@ -3,31 +3,26 @@ package main
 import "fmt"
 
 func pourWater(heights []int, V, K int) []int {
+	var j int
 	for i := 0; i < V; i++ {
 		k := K
 
-		for j := k - 1; j >= 0; j-- {
-			if heights[j] > heights[k] {
-				break
-			}
+		j = k
+		for j > 0 && heights[j] >= heights[j-1] {
+			j--
 			if heights[j] < heights[k] {
 				k = j
 			}
-		}
-		if k != K {
-			heights[k]++
-			continue
 		}
 
-		for j := k + 1; j < len(heights); j++ {
-			if heights[j] > heights[k] {
-				break
-			}
+		j = k
+		for j < len(heights)-1 && heights[j] >= heights[j+1] {
+			j++
 			if heights[j] < heights[k] {
 				k = j
-				break
 			}
 		}
+
 		heights[k]++
 	}
 	return heights
