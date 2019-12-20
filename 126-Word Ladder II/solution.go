@@ -5,13 +5,10 @@ import (
 	"strings"
 )
 
-type pair struct {
-	word  string
-	level int
-}
+var graph map[string][]string
 
-func generatePattern(word string) (patterns []string) {
-	patterns = []string{}
+func generatePattern(word string) []string {
+	patterns := []string{}
 	for i := 0; i < len(word); i++ {
 		sb := strings.Builder{}
 		sb.WriteString(word[:i])
@@ -19,63 +16,54 @@ func generatePattern(word string) (patterns []string) {
 		sb.WriteString(word[i+1:])
 		patterns = append(patterns, sb.String())
 	}
-	return
+	return patterns
 }
 
-func updatePatterns(patterns map[string][]string, word string) {
-	for _, pat := range generatePattern(word) {
-		if _, ok := patterns[pat]; !ok {
-			patterns[pat] = make([]string, 1)
+func generateGraph(word string, graph map[string][]string) {
+	for _, pattern := range generatePattern(word) {
+		if _, ok := graph[pattern]; !ok {
+			graph[pattern] = []string{}
 		}
-		patterns[pat] = append(patterns[pat], word)
+		graph[pattern] = append(graph[pattern], word)
 	}
 }
 
-func findLadders(beginWord string, endWord string, wordList []string) [][]string {
-	patterns := make(map[string][]string)
-	paths := make([][]string, 0)
+func bfs(begin, end string, graph map[string][]string) (paths [][]string) {
+	q := [][]string{[]string{begin}}
+	visited := make(map[string]bool)
 
-	exist := false
-	for _, word := range wordList {
-		if word == endWord {
-			exist = true
-		}
-		updatePatterns(patterns, word)
-	}
-	if !exist {
-		return paths
-	}
-
-	updatePatterns(patterns, beginWord)
-
-	q := append(make([]pair, len(wordList)), pair{beginWord, 1})
-	seen := make(map[string]bool)
-	var node pair
 	for len(q) > 0 {
-		node, q = q[0], q[1:]
-		word := node.word
-		level := node.level
+		path := q[0]
+		q = q[1:]
 
-		for _, pat := range generatePattern(word) {
-			for _, combo := range patterns[pat] {
-				if combo == endWord {
-					return paths
-				}
-
-				if _, ok := seen[combo]; ok {
-					continue
-				}
-				seen[combo] = true
-				q = append(q, pair{combo, level + 1})
-			}
+		word := path[len(path)-1]
+		if word == end {
+			paths = append(paths, path)
+			continue
 		}
+
+		visited[word] = true
+		for _, v := range generatePattern(word) {
+			if _, ok := visited[v]; ok {
+				continue
+			}
+			q = append(q, graph[v])
+		}
+
+		delete(visited, word)
 	}
+
 	return paths
 }
 
 func main() {
-	beginWord := "hit"
-	endWord := "cog"
-	wordList := []string{"hot", "dot", "dog", "lot", "log", "cog"}
-	fmt.Println(findLadders(beginWord, endWord, wordList))
+	begin, end := "hit", "cog"
+	graph = make(map[string][]string)
+	for _, word := range []string{"hot", "dot", "dog", "lot", "log", "cog"} {
+		generateGraph(word, graph)
+	}
+	generateGraph(begin, graph)
+	fmt.Println(graph)
+
+	fmt.Println(bfs(begin, end, graph))
 }
