@@ -28,9 +28,17 @@ func generateGraph(word string, graph map[string][]string) {
 	}
 }
 
+func isVisited(word string, path []string) bool {
+	for _, p := range path {
+		if word == p {
+			return true
+		}
+	}
+	return false
+}
+
 func bfs(begin, end string, graph map[string][]string) (paths [][]string) {
 	q := [][]string{[]string{begin}}
-	visited := make(map[string]bool)
 
 	for len(q) > 0 {
 		path := q[0]
@@ -42,15 +50,16 @@ func bfs(begin, end string, graph map[string][]string) (paths [][]string) {
 			continue
 		}
 
-		visited[word] = true
 		for _, v := range generatePattern(word) {
-			if _, ok := visited[v]; ok {
-				continue
+			for _, item := range graph[v] {
+				if isVisited(item, path) {
+					continue
+				}
+				newPath := append(path[:0:0], path...)
+				newPath = append(newPath, item)
+				q = append(q, newPath)
 			}
-			q = append(q, graph[v])
 		}
-
-		delete(visited, word)
 	}
 
 	return paths
