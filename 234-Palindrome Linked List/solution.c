@@ -15,23 +15,39 @@ struct ListNode
 bool isPalindrome(struct ListNode *head)
 {
     if (head == NULL || head->next == NULL)
-        return false;
+        return true;
 
-    struct ListNode *slow = head, *fast = head->next;
+    struct ListNode *slow = head, *fast = head;
+    struct ListNode *p0 = NULL, *p1 = NULL;
     while (fast != NULL && fast->next != NULL)
     {
+        p0 = slow;
         slow = slow->next;
         fast = fast->next->next;
+        p0->next = p1;
+        p1 = p0;
     }
+
+    if (fast != NULL)
+        slow = slow->next;
+
+    while (slow != NULL && p0 != NULL)
+    {
+        if (slow->val != p0->val)
+            return false;
+        slow = slow->next;
+        p0 = p0->next;
+    }
+
     return true;
 }
 
 int main()
 {
-    int arr[] = {1, 2, 3, 2, 1};
+    int arr[] = {1, 2, 3, 1};
     struct ListNode *head = (struct ListNode *)malloc(sizeof(struct ListNode));
     struct ListNode *prev = head, *tmp;
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 4; i++)
     {
         tmp = (struct ListNode *)malloc(sizeof(struct ListNode));
         tmp->val = arr[i];
@@ -41,7 +57,7 @@ int main()
     }
 
     prev = head;
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 4; i++)
     {
         prev = prev->next;
         printf("%d ", prev->val);
