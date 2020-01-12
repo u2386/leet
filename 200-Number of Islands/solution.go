@@ -4,56 +4,79 @@ import (
 	"fmt"
 )
 
-type pos struct {
-	x int
-	y int
+type unionFindSet struct {
+	count   int
+	parents []int
+	ranks   []int
 }
 
-func explore(p pos, grid [][]byte, seen [][]bool) {
-	q := []pos{}
-	q = append(q, p)
-	for len(q) != 0 {
-		p, q = q[0], q[1:]
-		if grid[p.x][p.y] == '1' {
-			if p.x-1 >= 0 && !seen[p.x-1][p.y] {
-				q = append(q, pos{p.x - 1, p.y})
-				seen[p.x-1][p.y] = true
-			}
-			if p.x+1 < len(grid) && !seen[p.x+1][p.y] {
-				q = append(q, pos{p.x + 1, p.y})
-				seen[p.x+1][p.y] = true
-
-			}
-			if p.y-1 >= 0 && !seen[p.x][p.y-1] {
-				q = append(q, pos{p.x, p.y - 1})
-				seen[p.x][p.y-1] = true
-
-			}
-			if p.y+1 < len(grid[p.x]) && !seen[p.x][p.y+1] {
-				q = append(q, pos{p.x, p.y + 1})
-				seen[p.x][p.y+1] = true
-			}
-		}
+func createUnionFindSet(n int) *unionFindSet {
+	us := &unionFindSet{
+		count:   n,
+		parents: make([]int, n),
+		ranks:   make([]int, n),
 	}
+
+	for i := 0; i < n; i++ {
+		us.parents[i] = i
+	}
+	return us
+}
+
+func (us *unionFindSet) union(x, y int) {
+	xp, yp := us.find(x), us.find(y)
+	if xp == yp {
+		return
+	}
+	if us.ranks[xp] < us.ranks[yp] {
+		us.parents[xp] = yp
+	} else if us.ranks[xp] > us.ranks[yp] {
+		us.parents[yp] = xp
+	} else {
+		us.parents[yp] = xp
+		us.ranks[xp]++
+	}
+	us.count--
+}
+
+func (us *unionFindSet) find(x int) int {
+	if x != us.parents[x] {
+		us.parents[x] = us.find(us.parents[x])
+	}
+	return us.parents[x]
 }
 
 func numIslands(grid [][]byte) int {
-	seen := make([][]bool, len(grid))
-	for i := range grid {
-		seen[i] = make([]bool, len(grid[i]))
+	if len(grid) == 0 {
+		return 0
+	}
+	row, col := len(grid), len(grid[0])
+	index := func(x, y int) int {
+		return x*col + y
 	}
 
-	count := 0
-	for i := range grid {
-		for j := range grid[i] {
-			if grid[i][j] == '1' && !seen[i][j] {
-				seen[i][j] = true
-				explore(pos{i, j}, grid, seen)
-				count++
+	dirs := [][2]int{
+		[2]int{0, 1},
+		[2]int{1, 0},
+	}
+	dummy := row * col
+	uf := createUnionFindSet(row*col + 1)
+	for i := 0; i < row; i++ {
+		for j := 0; j < col; j++ {
+			if grid[i][j] == '0' {
+				uf.union(index(i, j), dummy)
+			} else {
+				for _, d := range dirs {
+					di, dj := i+d[0], j+d[1]
+					if di < row && dj < col && grid[di][dj] == '1' {
+						uf.union(index(di, dj), index(i, j))
+					}
+				}
 			}
 		}
 	}
-	return count
+
+	return uf.count - 1
 }
 
 func main() {
