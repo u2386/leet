@@ -1,5 +1,9 @@
 package main
 
+import (
+	"fmt"
+)
+
 // TreeNode definite a binary tree node.
 type TreeNode struct {
 	Val   int
@@ -12,29 +16,36 @@ func isValidBST(root *TreeNode) bool {
 		return true
 	}
 
-	last := 1 << 31
-	var n *TreeNode
-	stack := []*TreeNode{root}
-	for len(stack) > 0 {
-		n = stack[len(stack)-1]
-		if n.Left != nil {
-			stack = append(stack, n.Left)
-			continue
+	last := -1 << 63
+	n := root
+	stack := []*TreeNode{}
+	for n != nil || len(stack) > 0 {
+		for n != nil {
+			stack = append(stack, n)
+			n = n.Left
 		}
 
 		n, stack = stack[len(stack)-1], stack[:len(stack)-1]
 
-		if n.Val < last {
+		if n.Val <= last {
 			return false
 		}
 		last = n.Val
-
-		if n.Right != nil {
-			stack = append(stack, n.Right)
-		}
+		n = n.Right
 	}
+	return true
 }
 
 func main() {
+	root := TreeNode{
+		Val: 2,
+		Left: &TreeNode{
+			Val: 1,
+		},
+		Right: &TreeNode{
+			Val: 3,
+		},
+	}
 
+	fmt.Println(isValidBST(&root))
 }
