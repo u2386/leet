@@ -1,5 +1,7 @@
 # coding: utf-8
 
+import collections
+
 
 class Node(object):
     def __init__(self, val=0, left=None, right=None, next=None):
@@ -18,9 +20,10 @@ class Solution(object):
         if not root:
             return root
 
-        q, p = [root], []
+        q, p = collections.deque(), collections.deque()
+        q.append(root)
         while q or p:
-            n, q = q[0], q[1:]
+            n = q.popleft()
             if not n:
                 continue
 
