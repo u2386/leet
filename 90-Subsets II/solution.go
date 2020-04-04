@@ -1,47 +1,42 @@
 package main
 
 import (
+	"sort"
 	"fmt"
 )
 
-type retval struct {
-	accu  [][]int
-	pivot int
-}
+var prev [][]int
 
-func subsets(nums []int) retval {
-	ret := retval{
-		accu:  [][]int{},
-		pivot: 0,
-	}
-
+func subsets(nums []int) [][]int {
+	accu := [][]int{}
 	if len(nums) == 0 {
-		ret.accu = append(ret.accu, nums)
-		ret.pivot++
-		return ret
+		return append(accu, []int{})
 	}
 
-	dup := len(nums) > 1 && nums[0] == nums[1]
-	prev := subsets(nums[1:])
-	for _, v := range prev.accu {
-		ret.accu = append(ret.accu, v)
+	sets := subsets(nums[1:])
+	for _, v := range sets {
+		accu = append(accu, v)
 	}
-	for i, v := range prev.accu {
-		if dup && i < prev.pivot {
-			continue
-		}
-		ret.accu = append(ret.accu, append([]int{nums[0]}, v...))
+
+	if !(len(nums) > 1 && nums[0] == nums[1]) {
+		prev = sets
 	}
-	ret.pivot = len(prev.accu)
-	return ret
+	p := append(prev[:0:0], prev...)
+	prev = [][]int{}
+	for _, v := range p {
+		v := append([]int{nums[0]}, v...)
+		accu = append(accu, v)
+		prev = append(prev, v)
+	}
+	return accu
 }
 
 func subsetsWithDup(nums []int) [][]int {
-	prev := subsets(nums)
-	return prev.accu
+	sort.Ints(nums)
+	return subsets(nums)
 }
 
 func main() {
-	arr := []int{1, 1, 2, 2}
+	arr := []int{4, 4, 4, 1, 4}
 	fmt.Println(subsetsWithDup(arr))
 }
